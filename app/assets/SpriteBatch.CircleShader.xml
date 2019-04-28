@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shader name="SpriteBatchCircleShader">
+
+  <properties>
+    <transparent enabled="false" />
+    <blend enabled="true" template_file="Blend.PreMulAlpha.xml"/>
+    <cull enabled="false" />
+    <depth enabled="false" />
+  </properties>
+  
+  <aliases>
+    <alias uniform="mvp0" type="mat4" ref="ModelViewProjectionMatrix" />
+	<alias uniform="default_z" type="float" ref="Callback" />
+  </aliases>
+  
+  <vertex>
+    <![CDATA[
+    #version 330 core
+    layout (location = 0) in vec2 pos0;
+    layout (location = 1) in vec2 uv0;
+    layout (location = 2) in vec4 color0;
+	layout (location = 3) in vec4 data0;
+    
+    out vec2 uv0_out;
+    out vec4 color0_out;
+	out vec4 data0_out;
+    
+    uniform mat4 mvp0;
+    uniform float default_z;
+    
+    void main()
+    {
+      gl_Position = mvp0 * vec4(pos0.xy, default_z, 1.0);
+      uv0_out = uv0;
+      color0_out = color0;
+	  data0_out = data0;
+    }
+    ]]>
+  </vertex>
+  
+  <fragment>
+    <![CDATA[
+    #version 330 core
+    out vec4 FragColor;
+    
+    in vec2 uv0_out;
+    in vec4 color0_out;
+	in vec4 data0_out;
+
+    void main()
+    {
+		float dist = length(uv0_out-vec2(0.5,0.5))*2.0;
+		
+		FragColor.a = smoothstep(0, data0_out.x, 1.0-dist);
+		FragColor.rgb = mix(vec3(1,1,1), color0_out.rgb, color0_out.a) * FragColor.a;
+    }
+    ]]>
+  </fragment>
+  
+  <geometry>
+    <![CDATA[]]>
+  </geometry>
+</shader>
