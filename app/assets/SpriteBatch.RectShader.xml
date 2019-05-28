@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shader name="SpriteBatchRectShader">
+
+  <properties>
+    <transparent enabled="false" />
+    <blend enabled="true" template_file="Blend.PreMulAlpha.xml"/>
+    <cull enabled="false" />
+    <depth enabled="false" />
+  </properties>
+  
+  <aliases>
+    <alias uniform="mvp0" type="mat4" ref="ModelViewProjectionMatrix" />
+	<alias uniform="default_z" type="float" ref="Callback" />
+  </aliases>
+  
+  <vertex>
+    <![CDATA[
+    #version 330 core
+    layout (location = 0) in vec2 pos0;
+    layout (location = 1) in vec2 uv0;
+    layout (location = 2) in vec4 color0;
+	layout (location = 3) in vec4 data0;
+    layout (location = 4) in vec4 data1;
+	
+    out vec2 uv0_out;
+    out vec4 color0_out;
+	out vec4 data0_out;
+    out vec4 data1_out;
+	
+    uniform mat4 mvp0;
+    uniform float default_z;
+    
+    void main()
+    {
+      gl_Position = mvp0 * vec4(pos0.xy, default_z, 1.0);
+      uv0_out = uv0;
+      color0_out = color0;
+	  data0_out = data0;
+	  data1_out = data1;
+    }
+    ]]>
+  </vertex>
+  
+  <fragment>
+    <![CDATA[
+    #version 330 core
+    out vec4 FragColor;
+    
+    in vec2 uv0_out;
+    in vec4 color0_out;
+	in vec4 data0_out;
+	in vec4 data1_out;
+
+	float rect_quadrant(vec2 uv_in)
+	{
+		float scale_x = min(1.0,data0_out.x / data0_out.y);
+		float scale_y = min(1.0,data0_out.y / data0_out.x);
+		
+		float rad_scale_min = min(data0_out.z / data0_out.x,data0_out.z / data0_out.y);
+		
+		vec2 rad_scaled = data0_out.zz / vec2(data0_out.x, data0_out.y);
+		vec2 uv_mod = uv_in - rad_scaled;
+		vec2 rad_1 = min(uv_mod * vec2(scale_x, scale_y),1.0);
+		vec2 rad_2 = rad_1 / rad_scale_min;
+		
+		float lr1 = 1.0-abs(rad_2.x);
+		float lr2 = 1.0-abs(rad_2.y);
+		float lr3 = max(lr2*step(rad_scaled.x,uv_in.x),lr1*step(rad_scaled.y,uv_in.y));
+		float lr4 = 1.0-length(rad_2);
+		float result = max(max(0.0,min(1.0,lr4)),max(0.0,min(1.0,lr3)));
+		
+		return result;//smoothstep(0.0,1.0,max(0.0,min(1.0,result)));
+	}
+	
+    void main()
+    {
+		float qd_lt = step(0.5,1.0-uv0_out.x) * step(0.5,1.0-uv0_out.y) * rect_quadrant(vec2(uv0_out.x,uv0_out.y));
+		float qd_rt = step(0.5,uv0_out.x) * step(0.5,1.0-uv0_out.y) * rect_quadrant(vec2(1.0-uv0_out.x,uv0_out.y));
+		float qd_ld = step(0.5,1.0-uv0_out.x) * step(0.5,uv0_out.y) * rect_quadrant(vec2(uv0_out.x,1.0-uv0_out.y));
+		float qd_rd = step(0.5,uv0_out.x) * step(0.5,uv0_out.y) * rect_quadrant(vec2(1.0-uv0_out.x,1.0-uv0_out.y));
+		
+		FragColor.a = smoothstep(0.0,1.0,qd_lt + qd_rt + qd_rd + qd_ld);
+		//FragColor.a = smoothstep(0.0,1.0,max(0.0,min(1.0,FragColor.a)));
+		//FragColor.a = smoothstep(data1_out.x,data1_out.y,(qd_lt + qd_rt + qd_rd + qd_ld));
+		
+		FragColor.rgb = mix(vec3(1,1,1), color0_out.rgb, color0_out.a) * FragColor.a;
+    }
+    ]]>
+  </fragment>
+  
+  <geometry>
+    <![CDATA[]]>
+  </geometry>
+</shader>

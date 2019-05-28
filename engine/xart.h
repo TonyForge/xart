@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "UI.h"
 #include "projects\xart\Graph2D.h"
+#include "Input.h"
 
 namespace XART
 {

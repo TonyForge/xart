@@ -17,7 +17,7 @@ ok::graphics::SpriteBatch::SpriteBatch(int size, int extra_data_channels)
 	for (int i = 0; i < extra_data_channels; i++)
 	{
 		glBO->AddVertexBuffer(GL_DYNAMIC_DRAW, 4);
-		extra_data[i] = glBO->GetVertexBuffer(2 + i).vertices;
+		extra_data[i] = glBO->GetVertexBuffer(3 + i).vertices;
 	}
 
 	glBO->AddIndexBuffer(GL_STATIC_DRAW, size * 2);
@@ -364,6 +364,11 @@ void ok::graphics::SpriteBatch::BatchEnd()
 	glBO->ReloadVertexBuffer(0); //reload positions
 	glBO->ReloadVertexBuffer(1); //reload texcoords
 	glBO->ReloadVertexBuffer(2); //reload colors
+
+	for (int i = 0; i < extra_data.size(); i++)
+	{
+		glBO->ReloadVertexBuffer(3 + i);
+	}
 
 	//bind buffers
 	glBO->Bind();

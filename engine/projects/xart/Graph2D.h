@@ -13,6 +13,19 @@ namespace ok
 	{
 		class Graph2D;
 
+		enum class G2D_Anchor
+		{
+			G2D_Anchor_Center,
+			G2D_Anchor_Left,
+			G2D_Anchor_Left_Top,
+			G2D_Anchor_Right,
+			G2D_Anchor_Right_Top,
+			G2D_Anchor_Top,
+			G2D_Anchor_Bottom,
+			G2D_Anchor_Left_Bottom,
+			G2D_Anchor_Right_Bottom
+		};
+
 		class G2D_Canvas
 		{
 		public:
@@ -47,8 +60,9 @@ namespace ok
 			static void LineTo(glm::vec3 position);
 
 			static void Circle(glm::vec3 center, float radius);
-			//static void Circle(glm::vec3 center, float radius, float arc_step_degrees);
-			//static void Round(glm::vec3 center, float radius, float arc_step_degrees);
+			static void Round(glm::vec3 center, float radius);
+			static void Rect(glm::vec3 anchor, float width, float height, float radius = 0.f, ok::graphics::G2D_Anchor anchor_type = ok::graphics::G2D_Anchor::G2D_Anchor_Left_Top, float rotation = 0.f);
+			//static void Text
 
 			static void SetBrushColor(ok::Color color);
 			static void SetBrushColor(ok::Color begin_color, ok::Color end_color);
@@ -65,6 +79,7 @@ namespace ok
 			ok::graphics::SpriteBatch* _sprite_batch_premulalpha_decoder = nullptr;
 			ok::graphics::SpriteBatch* _sprite_batch = nullptr;
 			ok::graphics::SpriteBatch* _sprite_batch_ex1 = nullptr;
+			ok::graphics::SpriteBatch* _sprite_batch_ex2 = nullptr;
 		protected:
 		};
 	}

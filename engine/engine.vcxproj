@@ -72,7 +72,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='XART_Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)app\</OutDir>
-    <TargetName>xart2</TargetName>
+    <TargetName>xart</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='XART_Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

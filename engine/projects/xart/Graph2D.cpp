@@ -21,6 +21,7 @@ void ok::graphics::Graph2D::Init()
 	o()._sprite_batch->SetMaterial(ok::AssetsBasic::instance().GetMaterial("SpriteBatch.PreMulAlphaMaterial.xml"));
 
 	o()._sprite_batch_ex1 = new ok::graphics::SpriteBatch(1000,1);
+	o()._sprite_batch_ex2 = new ok::graphics::SpriteBatch(1000, 2);
 }
 
 void ok::graphics::Graph2D::PushCanvas(ok::graphics::G2D_Canvas * canvas)
@@ -93,12 +94,122 @@ void ok::graphics::Graph2D::Circle(glm::vec3 center, float radius)
 	info.rect.left = 0; info.rect.top = 0;
 	info.rect.width = 1; info.rect.height = 1;
 
-	info.extra_data.push_back(glm::vec4(1.f,0.f,0.f,0.f));
+	float thickness = o()._line_batch->GetBrushThickness();
+	float softness = o()._line_batch->GetBrushSoftness();
+	float thickness_max = radius;
+
+	float thickness_nm = 1.f - (glm::min(thickness_max, thickness) / thickness_max);
+
+	info.extra_data.push_back(glm::vec4(thickness_nm - glm::min(softness,0.01f), thickness_nm + glm::mix(0.f,2.f*thickness / radius,softness), 0.f, 0.f));
 
 	o()._sprite_batch_ex1->SetMaterial(ok::AssetsBasic::instance().GetMaterial("SpriteBatch.CircleMaterial.xml"));
 	o()._sprite_batch_ex1->BatchBegin();
-	o()._sprite_batch_ex1->Draw(&info, glm::vec2(center.x, center.y), 0.f, glm::vec2(radius, radius));
+	o()._sprite_batch_ex1->Draw(&info, glm::vec2(center.x, center.y), 0.f, glm::vec2(radius*2*2, radius*2*2));
 	o()._sprite_batch_ex1->BatchEnd();
+}
+
+void ok::graphics::Graph2D::Round(glm::vec3 center, float radius)
+{
+	ok::graphics::SpriteInfo info;
+	info.tint_color = o()._line_batch->GetBrushColor();
+	info.tint_power = 1.f;
+	info.rect.texture = nullptr;
+	info.rect.uv_rect = glm::vec4(0.f, 0.f, 1.f, 1.f);
+	info.rect.left = 0; info.rect.top = 0;
+	info.rect.width = 1; info.rect.height = 1;
+
+	float softness = o()._line_batch->GetBrushSoftness();
+	info.extra_data.push_back(glm::vec4(0.f, glm::mix(100.f*softness / radius, softness, softness), 0.f, 0.f));
+
+	o()._sprite_batch_ex1->SetMaterial(ok::AssetsBasic::instance().GetMaterial("SpriteBatch.RoundMaterial.xml"));
+	o()._sprite_batch_ex1->BatchBegin();
+	o()._sprite_batch_ex1->Draw(&info, glm::vec2(center.x, center.y), 0.f, glm::vec2(radius * 2, radius * 2));
+	o()._sprite_batch_ex1->BatchEnd();
+}
+
+void ok::graphics::Graph2D::Rect(glm::vec3 anchor, float width, float height, float radius, ok::graphics::G2D_Anchor anchor_type, float rotation)
+{
+	
+	ok::graphics::SpriteInfo info;
+	info.tint_color = o()._line_batch->GetBrushColor();
+	info.tint_power = 1.f;
+	info.rect.texture = nullptr;
+	info.rect.uv_rect = glm::vec4(0.f, 0.f, 1.f, 1.f);
+	info.rect.left = 0; info.rect.top = 0;
+	info.rect.width = width; info.rect.height = height;
+
+	//info.rect.width = width + radius*(2.3f); info.rect.height = height + radius* 2.3f;
+
+	//info.rect.width = width + radius*2.7f; info.rect.height = height + radius* 2.7f;
+	//info.rect.width = width + radius * 4.0f; info.rect.height = height + radius * 4.0f;
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Center)
+	{
+		info.hotspot.x = 0.5f;
+		info.hotspot.y = 0.5f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Left)
+	{
+		info.hotspot.x = 0.0f;
+		info.hotspot.y = 0.5f;
+	}
+	
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Top)
+	{
+		info.hotspot.x = 0.5f;
+		info.hotspot.y = 0.0f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Right)
+	{
+		info.hotspot.x = 1.0f;
+		info.hotspot.y = 0.0f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Bottom)
+	{
+		info.hotspot.x = 0.5f;
+		info.hotspot.y = 1.0f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Left_Top)
+	{
+		info.hotspot.x = 0.0f;
+		info.hotspot.y = 0.0f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Left_Bottom)
+	{
+		info.hotspot.x = 0.0f;
+		info.hotspot.y = 1.0f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Right_Top)
+	{
+		info.hotspot.x = 1.0f;
+		info.hotspot.y = 0.0f;
+	}
+
+	if (anchor_type == ok::graphics::G2D_Anchor::G2D_Anchor_Right_Bottom)
+	{
+		info.hotspot.x = 1.0f;
+		info.hotspot.y = 1.0f;
+	}
+
+	float thickness = o()._line_batch->GetBrushThickness();
+	float softness = o()._line_batch->GetBrushSoftness();
+	float thickness_max = radius*2;
+
+	float thickness_nm = 1.f-(glm::min(thickness_max, thickness) / thickness_max);
+
+	info.extra_data.push_back(glm::vec4(width, height, radius, 1.0f));
+	info.extra_data.push_back(glm::vec4(0.97f*thickness_nm, 1.414f, 0.f, 0.f));
+
+	o()._sprite_batch_ex2->SetMaterial(ok::AssetsBasic::instance().GetMaterial("SpriteBatch.RectMaterial.xml"));
+	o()._sprite_batch_ex2->BatchBegin();
+	o()._sprite_batch_ex2->Draw(&info, glm::vec2(anchor.x, anchor.y), rotation, glm::vec2(1.f, 1.f));
+	o()._sprite_batch_ex2->BatchEnd();
 }
 
 /*void ok::graphics::Graph2D::Circle(glm::vec3 center, float radius, float arc_step_degrees)
